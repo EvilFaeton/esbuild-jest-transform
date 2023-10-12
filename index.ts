@@ -13,7 +13,7 @@ const external = [
   ...Object.keys(pkg.peerDependencies ?? {}),
 ];
 
-const transformer: SyncTransformer<esbuild.BuildOptions> = {
+const transformer: SyncTransformer<{config: esbuild.BuildOptions, external: string[]}> = {
   process(_content, filename, { transformerConfig }) {
     const { outputFiles } = esbuild.buildSync({
       outdir: "./dist",
@@ -21,9 +21,9 @@ const transformer: SyncTransformer<esbuild.BuildOptions> = {
       bundle: true,
       write: false,
       sourcemap: true,
-      ...transformerConfig,
+      ...(transformerConfig?.config ?? {}),
       entryPoints: [filename],
-      external,
+      external: [...external, ...(transformerConfig?.external ?? [])],
     });
 
     return outputFiles!.reduce((cur, item) => {
